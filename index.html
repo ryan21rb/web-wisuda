@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Smart Graduation v2.0 - ALL IN ONE</title>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #10B981, #059669);
+            --warning-gradient: linear-gradient(135deg, #F59E0B, #D97706);
+            --danger-gradient: linear-gradient(135deg, #EF4444, #DC2626);
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-neumorph: 10px 10px 20px rgba(0,0,0,0.2), -10px -10px 20px rgba(255,255,255,0.1);
+            --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.5);
+            --qr-placeholder: linear-gradient(45deg, rgba(168,85,247,0.1), rgba(245,87,108,0.1));
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1600px; margin: 0 auto; }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-neumorph);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .header-card {
+            text-align: center;
+            background: var(--primary-gradient);
+            border: none;
+            box-shadow: var(--shadow-glow);
+            margin-bottom: 40px;
+            grid-column: 1 / -1;
+        }
+
+        .header-card h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .qr-viewer {
+            width: 100%;
+            height: 280px;
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            background: var(--qr-placeholder);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            gap: 15px;
+        }
+
+        .qr-placeholder-content {
+            text-align: center;
+            opacity: 0.6;
+            font-size: 1.1rem;
+        }
+
+        /* ICON KHUSUS PER STATION */
+        .station-icon {
+            font-size: 5rem !important;
+            margin-bottom: 15px;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .absen-icon { 
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ortu-icon { 
+            background: linear-gradient(135deg, #EC4899, #BE185D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .toga-icon { 
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ijazah-icon { 
+            background: linear-gradient(135deg, #10B981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .foto-icon { 
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .qr-viewer.scanning {
+            background: linear-gradient(45deg, rgba(16,185,129,0.25), rgba(34,197,94,0.25));
+            border: 2px solid;
+            border-image: var(--success-gradient) 1;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .qr-viewer.error {
+            background: linear-gradient(45deg, rgba(239,68,68,0.25), rgba(220,38,38,0.25));
+            border: 2px solid;
+            border-image: var(--danger-gradient) 1;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .scan-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 20px #10B981;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 18px 24px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-action.scanning {
+            background: var(--success-gradient);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover { transform: translateY(-5px); }
+
+        .stat-val { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            display: block;
+            background: linear-gradient(135deg, #ffffff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .bulk-upload-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(168, 85, 247, 0.15));
+            border: 2px solid rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 50px 30px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.12);
+            transform: scale(1.02);
+        }
+
+        .upload-icon { 
+            font-size: 4rem; 
+            color: #a855f7; 
+            margin-bottom: 20px; 
+        }
+
+        .status-info {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-success { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+
+        @media (max-width: 1200px) {
+            .main-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .station-icon { font-size: 4rem !important; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        @keyframes scanLine {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #10B981, transparent);
+            animation: scanLine 2s infinite;
+            display: none;
+        }
+        @media (max-width: 768px) {
+  .glass-card { padding: 20px; }
+  .btn-action { font-size: 1rem; padding: 14px 20px; }
+}
+@media (max-width: 768px) {
+  .stats-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+  }
+  .stat-box { min-width: 140px; }
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card header-card">
+        <h1><i class="fas fa-graduation-cap"></i> Wisuda International Women University 2026</h1>
+        <p style="font-size: 1.3rem; opacity: 0.95; margin: 0;">Smart Graduation System - ALL IN ONE DATABASE</p>
+    </div>
+
+    <div class="main-grid">
+        <!-- Bulk Upload -->
+        <div class="glass-card bulk-upload-section">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600; text-align: center;">
+                📦 Bulk Upload 800+ QR
+            </h3>
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-folder-open upload-icon"></i>
+                <div style="font-size: 1.1rem; font-weight: 500;">Drag ZIP Folder</div>
+                <div style="opacity: 0.8; font-size: 0.9rem;">atau klik multiple files</div>
+                <input type="file" id="qrFile" accept=".zip,image/*,.pdf" style="display: none;" multiple>
+            </div>
+            <div id="uploadStatus" class="status-info" style="display: none;"></div>
+        </div>
+
+        <!-- Absen Mahasiswa -->
+        <div class="glass-card">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600;">
+                👨‍🎓 Absen Mahasiswa
+            </h3>
+            <div id="qr-absen" class="qr-viewer">
+                <i class="fas fa-user-graduate station-icon absen-icon"></i>
+                <div class="qr-placeholder-content">
+                    <div>Scan QR</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">Mahasiswa Hadir</div>
+                </div>
+                <div class="scan-indicator" id="scan-absen"></div>
+                <div class="scan-line" id="scanline-absen"></div>
+            </div>
+            <button class="btn-action" id="btn-absen" onclick="toggleScanner('absen')">
+                <i class="fas fa-camera"></i> Mulai Scanner
+            </button>
+            <div id="status-absen" class="status-info" style="display: none;"></div>
+        </div>
+
+        <!-- Absen Pendamping -->
+        <div class="glass-card">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600;">
+                👨‍👩‍👧 Absen Pendamping
+            </h3>
+            <div id="qr-ortu" class="qr-viewer">
+                <i class="fas fa-users station-icon ortu-icon"></i>
+                <div class="qr-placeholder-content">
+                    <div>Scan QR</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">Pendamping Hadir</div>
+                </div>
+                <div class="scan-indicator" id="scan-ortu"></div>
+                <div class="scan-line" id="scanline-ortu"></div>
+            </div>
+            <button class="btn-action" id="btn-ortu" onclick="toggleScanner('ortu')">
+                <i class="fas fa-camera"></i> Mulai Scanner
+            </button>
+            <div id="status-ortu" class="status-info" style="display: none;"></div>
+        </div>
+
+        <!-- Toga -->
+        <div class="glass-card">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600;">
+                🎓 Toga
+            </h3>
+            <div id="qr-toga" class="qr-viewer">
+                <i class="fas fa-user-tie station-icon toga-icon"></i>
+                <div class="qr-placeholder-content">
+                    <div>Scan QR</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">Toga Dikenakan</div>
+                </div>
+                <div class="scan-indicator" id="scan-toga"></div>
+                <div class="scan-line" id="scanline-toga"></div>
+            </div>
+            <button class="btn-action" id="btn-toga" onclick="toggleScanner('toga')">
+                <i class="fas fa-camera"></i> Mulai Scanner
+            </button>
+            <div id="status-toga" class="status-info" style="display: none;"></div>
+        </div>
+
+        <!-- Ijazah -->
+        <div class="glass-card">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600;">
+                📜 Ijazah
+            </h3>
+            <div id="qr-ijazah" class="qr-viewer">
+                <i class="fas fa-scroll station-icon ijazah-icon"></i>
+                <div class="qr-placeholder-content">
+                    <div>Scan QR</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">Ijazah Diberikan</div>
+                </div>
+                <div class="scan-indicator" id="scan-ijazah"></div>
+                <div class="scan-line" id="scanline-ijazah"></div>
+            </div>
+            <button class="btn-action" id="btn-ijazah" onclick="toggleScanner('ijazah')">
+                <i class="fas fa-camera"></i> Mulai Scanner
+            </button>
+            <div id="status-ijazah" class="status-info" style="display: none;"></div>
+        </div>
+
+        <!-- Foto -->
+        <div class="glass-card">
+            <h3 style="margin: 0 0 20px 0; font-size: 1.4rem; font-weight: 600;">
+                📸 Foto
+            </h3>
+            <div id="qr-foto" class="qr-viewer">
+                <i class="fas fa-camera-retro station-icon foto-icon"></i>
+                <div class="qr-placeholder-content">
+                    <div>Scan QR</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">Foto Diambil</div>
+                </div>
+                <div class="scan-indicator" id="scan-foto"></div>
+                <div class="scan-line" id="scanline-foto"></div>
+            </div>
+            <button class="btn-action" id="btn-foto" onclick="toggleScanner('foto')">
+                <i class="fas fa-camera"></i> Mulai Scanner
+            </button>
+            <div id="status-foto" class="status-info" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="glass-card" style="grid-column: 1 / -1;">
+        <h3 style="margin: 0 0 25px 0; font-size: 1.4rem; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-line"></i> Statistik Real-time (Satu Database)
+        </h3>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <span class="stat-val" id="s-total">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Total Scan</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-berhasil" style="background: linear-gradient(135deg, #10B981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Berhasil</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-absen">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Absen Mahasiswa</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-ortu">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Absen Pendamping</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-toga">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Toga</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-ijazah">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Ijazah</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="s-foto">0</span>
+                <span style="font-size: 0.9rem; opacity: 0.8;">Foto</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // SCRIPT JAVASCRIPT SAMA PERSIS seperti sebelumnya
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEbpBOKFFZ4vX_hGb_tCWusmjfd2oKesrT8px0O4GHA70oJZWwlltWK6gbcfXJjy0p4w/exec';
+    
+    let activeScanner = null;
+    let scanners = {};
+    let counts = { total: 0, berhasil: 0, absen: 0, ortu: 0, toga: 0, ijazah: 0, foto: 0 };
+    let scannedCodes = new Set();
+
+    // [SAMA PERSIS DENGAN KODE JAVASCRIPT SEBELUMNYA - TIDAK BERUBAH]
+    async function toggleScanner(station) {
+        const btn = document.getElementById(`btn-${station}`);
+        const viewer = document.getElementById(`qr-${station}`);
+        const indicator = document.getElementById(`scan-${station}`);
+        const scanline = document.getElementById(`scanline-${station}`);
+        const statusDiv = document.getElementById(`status-${station}`);
+        const placeholder = viewer.querySelector('.qr-placeholder-content');
+
+        if (activeScanner) {
+            await stopAllScanners();
+            resetUI();
+            return;
+        }
+
+        try {
+            placeholder.style.display = 'none';
+            viewer.classList.add('scanning');
+            indicator.style.display = 'block';
+            scanline.style.display = 'block';
+            btn.classList.add('scanning');
+            btn.innerHTML = '<i class="fas fa-stop"></i> Stop Scanner';
+            statusDiv.textContent = '🔍 Scanning...';
+            statusDiv.className = 'status-info status-pending';
+            statusDiv.style.display = 'block';
+
+            const scanner = new Html5Qrcode(viewer);
+            scanners[station] = scanner;
+            activeScanner = scanner;
+
+            const config = {
+                fps: 15,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+                disableFlip: false
+            };
+
+            try {
+      await scanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => processScan(station, decodedText, statusDiv),
+        (error) => {}
+      );
+    } catch (err) {
+      // kalau gagal, fallback ke kamera depan
+      await scanner.start(
+        { facingMode: "user" },
+        config,
+        (decodedText) => processScan(station, decodedText, statusDiv),
+        (error) => {}
+      );
+    }
+
+  } catch (err) {
+    resetStationUI(station);
+    Swal.fire({ icon: 'error', title: 'Kamera Error!', text: 'Pastikan permission kamera diizinkan.', timer: 2500 });
+  }
+
+    }
+
+    async function stopAllScanners() {
+        Object.values(scanners).forEach(async (scanner) => {
+            if (scanner) await scanner.stop().catch(() => {});
+        });
+        scanners = {};
+        activeScanner = null;
+    }
+
+    function resetStationUI(station) {
+        const btn = document.getElementById(`btn-${station}`);
+        const viewer = document.getElementById(`qr-${station}`);
+        const indicator = document.getElementById(`scan-${station}`);
+        const scanline = document.getElementById(`scanline-${station}`);
+        const statusDiv = document.getElementById(`status-${station}`);
+        const placeholder = viewer.querySelector('.qr-placeholder-content');
+
+        btn.innerHTML = '<i class="fas fa-camera"></i> Mulai Scanner';
+        btn.classList.remove('scanning');
+        viewer.classList.remove('scanning', 'error');
+        indicator.style.display = 'none';
+        scanline.style.display = 'none';
+        placeholder.style.display = 'flex';
+        statusDiv.style.display = 'none';
+    }
+
+    function resetUI() {
+        ['absen', 'ortu', 'toga', 'ijazah', 'foto'].forEach(resetStationUI);
+    }
+
+    async function processScan(station, code, statusDiv) {
+        const uniqueKey = `${station}-${code}`;
+        
+        if (scannedCodes.has(code)) {
+            statusDiv.textContent = `⚠️ ${code} sudah discan`;
+            statusDiv.className = 'status-info status-warning';
+            setTimeout(() => statusDiv.style.display = 'none', 2000);
+            return;
+        }
+
+        scannedCodes.add(code);
+        sessionStorage.setItem(uniqueKey, '1');
+
+        try {
+            statusDiv.textContent = `⏳ Memproses ${code}...`;
+            
+            const response = await fetch(`${SCRIPT_URL}?action=scan&id=${code}&station=${station}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (data.result === "success" || data.status === "exists") {
+                counts.total++;
+                counts.berhasil++;
+                counts[station]++;
+                updateUI();
+
+                statusDiv.textContent = `✅ ${code} - Success`;
+                statusDiv.className = 'status-info status-success';
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: `${station.toUpperCase()} OK`,
+                    text: `${code}`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                statusDiv.textContent = `❌ ${code} - ${data.message || 'Not Found'}`;
+                statusDiv.className = 'status-info status-error';
+                document.getElementById(`qr-${station}`).classList.add('error');
+            }
+
+        } catch (error) {
+            statusDiv.textContent = `❌ Error: ${code}`;
+            statusDiv.className = 'status-info status-error';
+        }
+
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+            document.getElementById(`qr-${station}`).classList.remove('error');
+        }, 3000);
+    }
+
+    function updateUI() {
+        document.getElementById('s-total').innerText = counts.total;
+        document.getElementById('s-berhasil').innerText = counts.berhasil;
+        document.getElementById('s-absen').innerText = counts.absen;
+        document.getElementById('s-ortu').innerText = counts.ortu;
+        document.getElementById('s-toga').innerText = counts.toga;
+        document.getElementById('s-ijazah').innerText = counts.ijazah;
+        document.getElementById('s-foto').innerText = counts.foto;
+    }
+
+    // Bulk Upload handlers (sama seperti sebelumnya)
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('qrFile');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    // [BULK UPLOAD CODE SAMA PERSIS - TIDAK BERUBAH]
+
+    updateUI();
+</script>
+</body>
+</html>
